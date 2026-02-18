@@ -64,19 +64,31 @@ function displayChampions(champions) {
     }
     
     championGrid.innerHTML = champions.map(champion => createChampionCard(champion)).join('');
+    
+    // Ajouter les événements de clic sur les cartes
+    addCardClickListeners();
+}
+
+// Ajouter les événements de clic sur les cartes
+function addCardClickListeners() {
+    const cards = document.querySelectorAll('.champion-card');
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => {
+            const champion = filteredChampions[index];
+            openChampionDetail(champion);
+        });
+    });
+}
+
+// Ouvrir les détails d'un champion
+function openChampionDetail(champion) {
+    const detailedContent = createDetailedCard(champion);
+    championModal.open(detailedContent);
 }
 
 // Créer une carte de champion
 function createChampionCard(champion) {
-    // Valeurs par défaut si les données sont manquantes
-    const difficulty = champion.info?.difficulty || 0;
-    const difficultyStars = '⭐'.repeat(Math.min(difficulty, 5)) || 'N/A';
-    const roles = champion.tags?.join(', ') || 'Non défini';
-    const attack = champion.info?.attack || 0;
-    const defense = champion.info?.defense || 0;
-    const magic = champion.info?.magic || 0;
     const imageUrl = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_0.jpg`;
-    const blurb = champion.blurb || 'Aucune description disponible';
     
     return `
         <div class="champion-card">
@@ -89,6 +101,7 @@ function createChampionCard(champion) {
                 <h3 class="champion-name">${champion.name}</h3>
                 <p class="champion-title">${champion.title}</p>
             </div>
+            <div class="champion-hover-text">Cliquez pour plus de détails</div>
         </div>
     `;
 }
