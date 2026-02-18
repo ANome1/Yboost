@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yboost - Champions de League of Legends</title>
+    <link rel="stylesheet" href="/src/assets/main.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🎮 Yboost</h1>
+            <p class="subtitle">Galerie des Champions de League of Legends</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="🔍 Rechercher un champion...">
+            <select id="roleFilter">
+                <option value="">Tous les rôles</option>
+                <option value="Mage">Mage</option>
+                <option value="Fighter">Combattant</option>
+                <option value="Tank">Tank</option>
+                <option value="Assassin">Assassin</option>
+                <option value="Marksman">Tireur</option>
+                <option value="Support">Support</option>
+            </select>
+        </div>
+
+        <div id="championCount" class="champion-count"></div>
+        
+        <div id="championGrid" class="champion-grid">
+            <div class="loading">Chargement des champions...</div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Yboost - League of Legends Champion Database</p>
+        </div>
+    </footer>
+
+    <script src="/src/app.js"></script>
+</body>
+</html>
