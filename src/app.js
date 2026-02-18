@@ -75,45 +75,19 @@ function createChampionCard(champion) {
     const attack = champion.info?.attack || 0;
     const defense = champion.info?.defense || 0;
     const magic = champion.info?.magic || 0;
-    const imageUrl = champion.image?.full || '';
+    const imageUrl = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_0.jpg`;
     const blurb = champion.blurb || 'Aucune description disponible';
     
     return `
         <div class="champion-card">
             <div class="champion-image">
-                <img src="${imageUrl.replace('.png', '.jpg')}" 
+                <img src="${imageUrl}" 
                      alt="${champion.name}"
-                     onerror="this.src='https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${champion.id}_0.jpg'"
                      loading="lazy">
             </div>
             <div class="champion-info">
                 <h3 class="champion-name">${champion.name}</h3>
                 <p class="champion-title">${champion.title}</p>
-                <div class="champion-stats">
-                    <div class="stat">
-                        <span class="stat-label">Rôle:</span>
-                        <span class="stat-value">${roles}</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-label">Difficulté:</span>
-                        <span class="stat-value">${difficultyStars}</span>
-                    </div>
-                    <div class="stat-row">
-                        <div class="stat-mini">
-                            <span class="stat-icon">⚔️</span>
-                            <span>${attack}/10</span>
-                        </div>
-                        <div class="stat-mini">
-                            <span class="stat-icon">🛡️</span>
-                            <span>${defense}/10</span>
-                        </div>
-                        <div class="stat-mini">
-                            <span class="stat-icon">✨</span>
-                            <span>${magic}/10</span>
-                        </div>
-                    </div>
-                </div>
-                <p class="champion-blurb">${blurb.substring(0, 150)}...</p>
             </div>
         </div>
     `;
