@@ -1,0 +1,23 @@
+{
+  "name": "yboost",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/ANome1/Yboost#readme",
+  "bugs": {
+    "url": "https://github.com/ANome1/Yboost/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ANome1/Yboost.git"
+  },
+  "license": "ISC",
+  "author": "PrettyFlacko",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
