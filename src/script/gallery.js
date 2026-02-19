@@ -149,10 +149,19 @@ function createSkinCard(skin) {
     const isOwned = userSkins.includes(skin.id);
     const isAuthenticated = window.auth?.isAuthenticated();
     
-    // Utiliser le splash path centré ou l'image de tile
-    const imageUrl = skin.splashPath 
-        ? `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1${skin.splashPath}`
-        : '';
+    // Extraire le champion et le numéro de skin du splashPath (centré)
+    let imageUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%230a1428"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23c89b3c" font-size="20" font-family="Arial"%3E${skin.name}%3C/text%3E%3C/svg%3E';
+    
+    if (skin.splashPath) {
+        // Format: /lol-game-data/assets/ASSETS/Characters/ChampionName/Skins/.../championname_splash_centered_X.jpg
+        const match = skin.splashPath.match(/\/Characters\/([^\/]+)\/.*_(\d+)\.jpg$/);
+        if (match) {
+            const championName = match[1];
+            const skinNum = match[2];
+            // Utiliser le CDN officiel de Riot Games (pas de CORS)
+            imageUrl = `https://ddragon.leagueoflegends.com/cdn/img/champion/splash/${championName}_${skinNum}.jpg`;
+        }
+    }
     
     // Badge de rareté
     let rarityLabel = 'Standard';
@@ -170,8 +179,7 @@ function createSkinCard(skin) {
             <div class="skin-image">
                 <img src="${imageUrl}" 
                      alt="${skin.name}"
-                     loading="lazy"
-                     onerror="this.src='/placeholder-skin.jpg'">
+                     loading="lazy">
             </div>
             <div class="skin-info">
                 <h3 class="skin-name">${skin.name}</h3>
