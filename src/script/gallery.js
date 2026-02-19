@@ -20,6 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
 });
 
+// Recharger les skins utilisateur quand la page devient visible
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && window.auth?.isAuthenticated()) {
+        loadUserSkins();
+    }
+});
+
+// Écouter les événements de modification de collection depuis d'autres pages
+window.addEventListener('storage', (e) => {
+    if (e.key === 'collection-updated' && window.auth?.isAuthenticated()) {
+        loadUserSkins();
+    }
+});
+
 // Configuration des écouteurs d'événements
 function setupEventListeners() {
     skinSearchInput?.addEventListener('input', filterSkins);
@@ -242,6 +256,8 @@ async function addSkinToCollection(skinId) {
             userSkins.push(skinId);
             displaySkins(filteredSkins);
             window.toast?.success('Skin ajouté à votre collection!');
+            // Notifier les autres onglets/pages
+            localStorage.setItem('collection-updated', Date.now().toString());
         } else {
             window.toast?.error(data.error || 'Erreur lors de l\'ajout du skin');
         }
@@ -264,6 +280,8 @@ async function removeSkinFromCollection(skinId) {
             userSkins = userSkins.filter(id => id !== skinId);
             displaySkins(filteredSkins);
             window.toast?.success('Skin retiré de votre collection');
+            // Notifier les autres onglets/pages
+            localStorage.setItem('collection-updated', Date.now().toString());
         } else {
             window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
         }
