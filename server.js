@@ -29,6 +29,10 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'))
 })
 
+app.get('/boosters', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/pages/boosters.html'))
+})
+
 app.get('/gallery', function (req, res) {
   res.sendFile(path.join(__dirname, 'src/pages/gallery.html'))
 })
@@ -123,6 +127,22 @@ app.get('/api/user/skins', async function (req, res) {
   res.json({ success: true, skins: skins })
 })
 
+// Ajouter plusieurs skins à la collection (depuis un booster)
+app.post('/api/user/skins', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const { skins } = req.body
+  const result = await userDB.addSkinsToUser(req.session.userId, skins)
+  
+  if (result.success) {
+    res.json({ success: true, message: 'Skins ajoutés à votre collection' })
+  } else {
+    res.status(500).json(result)
+  }
+})
+
 // Ajouter un skin à la collection
 app.post('/api/user/skins/:skinId', async function (req, res) {
   if (!req.session.userId) {
@@ -150,6 +170,58 @@ app.delete('/api/user/skins/:skinId', async function (req, res) {
   
   if (result.success) {
     res.json({ success: true, message: 'Skin retiré de votre collection' })
+  } else {
+    res.status(500).json(result)
+  }
+})
+
+// Obtenir la monnaie de l'utilisateur
+app.get('/api/user/currency', async function (req, res) {
+  if (!req.session.userId) {
+    return res.json({ blueEssence: 5000, riotPoints: 1350 })
+  }
+  
+  const currency = await userDB.getUserCurrency(req.session.userId)
+  res.json(currency)
+})
+
+// Mettre à jour la monnaie de l'utilisateur
+app.post('/api/user/currency', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const { blueEssence, riotPoints } = req.body
+  const result = await userDB.updateUserCurrency(req.session.userId, blueEssence, riotPoints)
+  
+  if (result.success) {
+    res.json({ success: true })
+  } else {
+    res.status(500).json(result)
+  }
+})
+
+// Obtenir les champions de l'utilisateur
+app.get('/api/user/champions', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const champions = await userDB.getUserChampions(req.session.userId)
+  res.json({ success: true, champions: champions })
+})
+
+// Ajouter des champions à la collection
+app.post('/api/user/champions', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const { champions } = req.body
+  const result = await userDB.addChampionsToUser(req.session.userId, champions)
+  
+  if (result.success) {
+    res.json({ success: true, message: 'Champions ajoutés à votre collection' })
   } else {
     res.status(500).json(result)
   }

@@ -15,6 +15,7 @@
                 </div>
                 <nav class="header-nav">
                     <a href="/" class="nav-link">Champions</a>
+                    <a href="/boosters" class="nav-link">Boosters</a>
                     <a href="/gallery" class="nav-link">Galerie de Skins</a>
                     <a href="/collection" class="nav-link active">Ma Collection</a>
                 </nav>
@@ -30,13 +31,13 @@
     <main class="container">
         <div class="page-header">
             <h2>✨ Ma Collection de Skins</h2>
-            <p class="page-subtitle">Gérez vos skins League of Legends</p>
+            <p class="page-subtitle">Vos skins obtenus via les boosters</p>
         </div>
 
         <div id="collectionStats" class="collection-stats">
             <div class="stat-card">
                 <div class="stat-number" id="totalSkins">0</div>
-                <div class="stat-label">Skins possédés</div>
+                <div class="stat-label">Skins obtenus</div>
             </div>
             <div class="stat-card">
                 <div class="stat-number" id="legendaryCount">0</div>
@@ -49,7 +50,7 @@
         </div>
 
         <div class="filter-section">
-            <input type="text" id="collectionSearchInput" placeholder="🔍 Rechercher dans ma collection...">
+            <input type="text" id="collectionSearchInput" placeholder="🔍 Rechercher un skin...">
             
             <select id="collectionRarityFilter">
                 <option value="">Toutes les raretés</option>
@@ -70,7 +71,7 @@
         <div id="emptyCollection" class="empty-state" style="display: none;">
             <p class="empty-icon">📦</p>
             <h3>Votre collection est vide</h3>
-            <p>Explorez la <a href="/gallery">galerie de skins</a> pour commencer votre collection !</p>
+            <p>Ouvrez des <a href="/boosters">boosters</a> pour obtenir vos premiers skins !</p>
         </div>
     </main>
 

@@ -13,58 +13,30 @@ const totalSkinsEl = document.getElementById('totalSkins');
 const legendaryCountEl = document.getElementById('legendaryCount');
 const mythicCountEl = document.getElementById('mythicCount');
 
+// Système de rareté (même que dans boosters.js)
+const RARITIES = {
+    kNoRarity: { name: 'Standard', color: '#6b7280', glow: '#9ca3af' },
+    kEpic: { name: 'Épique', color: '#a855f7', glow: '#c084fc' },
+    kLegendary: { name: 'Légendaire', color: '#f59e0b', glow: '#fbbf24' },
+    kMythic: { name: 'Mythique', color: '#ef4444', glow: '#fca5a5' },
+    kUltimate: { name: 'Ultimate', color: '#ff1493', glow: '#ff69b4' }
+};
+
 // Charger les données au démarrage
 document.addEventListener('DOMContentLoaded', () => {
-    // Attendre que l'authentification soit vérifiée
-    window.addEventListener('auth-ready', (event) => {
-        if (event.detail.authenticated) {
-            loadAllSkins();
-            setupEventListeners();
-        } else {
-            showLoginRequired();
-        }
-    }, { once: true });
-    
-    // Timeout de sécurité si auth-ready ne se déclenche pas
-    setTimeout(() => {
-        if (!window.auth?.isAuthenticated()) {
-            showLoginRequired();
-        } else {
-            loadAllSkins();
-            setupEventListeners();
-        }
-    }, 1000);
-});
-
-// Écouter la connexion de l'utilisateur
-window.addEventListener('user-logged-in', () => {
     loadAllSkins();
     setupEventListeners();
 });
 
-// Écouter la déconnexion
-window.addEventListener('user-logged-out', () => {
-    showLoginRequired();
-});
-
-// Recharger la collection quand la page devient visible
-document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && window.auth?.isAuthenticated()) {
-        loadAllSkins();
-    }
-});
-
-// Écouter les événements de modification de collection
+// Écouter les mises à jour de collection
 window.addEventListener('storage', (e) => {
-    if (e.key === 'collection-updated' && window.auth?.isAuthenticated()) {
+    if (e.key === 'collection-updated') {
         loadAllSkins();
     }
 });
 
 window.addEventListener('collection-updated', () => {
-    if (window.auth?.isAuthenticated()) {
-        loadAllSkins();
-    }
+    loadAllSkins();
 });
 
 // Configuration des écouteurs d'événements
@@ -73,18 +45,9 @@ function setupEventListeners() {
     collectionRarityFilter?.addEventListener('change', filterCollection);
 }
 
-// Afficher message de connexion requise
-function showLoginRequired() {
-    collectionGrid.innerHTML = `
-        <div class="empty-state">
-            <p class="empty-icon">🔒</p>
-            <h3>Connexion requise</h3>
-            <p>Connectez-vous pour voir votre collection de skins</p>
-        </div>
-    `;
-}
 
-// Charger tous les skins
+
+// Charger tous les skins obtenus
 async function loadAllSkins() {
     try {
         const [skinsResponse, userSkinsResponse] = await Promise.all([
@@ -98,12 +61,14 @@ async function loadAllSkins() {
         // Tous les skins disponibles
         allSkins = Object.values(skinsData);
         
-        // IDs des skins de l'utilisateur
+        // Skins obtenus par l'utilisateur (avec raretés)
         if (userSkinsData.success) {
-            userSkins = userSkinsData.skins;
+            userSkins = userSkinsData.skins || [];
+        } else {
+            userSkins = [];
         }
         
-        // Filtrer pour n'afficher que les skins possédés
+        // Afficher la collection
         updateCollection();
     } catch (error) {
         console.error('Erreur lors du chargement:', error);
@@ -113,28 +78,27 @@ async function loadAllSkins() {
 
 // Mettre à jour la collection
 function updateCollection() {
-    // Filtrer les skins possédés
-    const ownedSkins = allSkins.filter(skin => userSkins.includes(skin.id));
-    filteredSkins = ownedSkins;
+    // Les skins avec leurs raretés
+    filteredSkins = userSkins;
     
     // Mettre à jour les statistiques
-    updateStats(ownedSkins);
+    updateStats(userSkins);
     
     // Afficher
-    if (ownedSkins.length === 0) {
+    if (userSkins.length === 0) {
         showEmptyState();
     } else {
-        displayCollection(ownedSkins);
-        updateCount(ownedSkins.length);
+        displayCollection(userSkins);
+        updateCount(userSkins.length);
     }
 }
 
 // Mettre à jour les statistiques
-function updateStats(ownedSkins) {
-    const legendary = ownedSkins.filter(s => s.rarity === 'kLegendary').length;
-    const mythic = ownedSkins.filter(s => s.rarity === 'kMythic' || s.rarity === 'kUltimate').length;
+function updateStats(skins) {
+    const legendary = skins.filter(s => s.rarity === 'kLegendary').length;
+    const mythic = skins.filter(s => s.rarity === 'kMythic' || s.rarity === 'kUltimate').length;
     
-    if (totalSkinsEl) totalSkinsEl.textContent = ownedSkins.length;
+    if (totalSkinsEl) totalSkinsEl.textContent = skins.length;
     if (legendaryCountEl) legendaryCountEl.textContent = legendary;
     if (mythicCountEl) mythicCountEl.textContent = mythic;
 }
@@ -152,10 +116,8 @@ function filterCollection() {
     const searchTerm = collectionSearchInput?.value.toLowerCase() || '';
     const selectedRarity = collectionRarityFilter?.value || '';
     
-    const ownedSkins = allSkins.filter(skin => userSkins.includes(skin.id));
-    
-    filteredSkins = ownedSkins.filter(skin => {
-        const matchesSearch = skin.name?.toLowerCase().includes(searchTerm);
+    filteredSkins = userSkins.filter(skin => {
+        const matchesSearch = skin.skinName?.toLowerCase().includes(searchTerm);
         const matchesRarity = !selectedRarity || skin.rarity === selectedRarity;
         
         return matchesSearch && matchesRarity;
@@ -178,18 +140,18 @@ function displayCollection(skins) {
     }
     
     collectionGrid.innerHTML = skins.map(skin => createSkinCard(skin)).join('');
-    
-    // Ajouter les événements sur les boutons
-    addRemoveButtonListeners();
 }
 
 // Créer une carte de skin
-function createSkinCard(skin) {
-    // Extraire le champion et le numéro de skin du splashPath (centré)
-    let imageUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="300" height="200"%3E%3Crect width="300" height="200" fill="%230a1428"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%23c89b3c" font-size="20" font-family="Arial"%3E${skin.name}%3C/text%3E%3C/svg%3E';
+function createSkinCard(skinData) {
+    const rarityInfo = RARITIES[skinData.rarity] || RARITIES.kNoRarity;
     
-    if (skin.splashPath) {
-        const match = skin.splashPath.match(/\/Characters\/([^\/]+)\/.*_(\d+)\.jpg$/);
+    // Trouver le skin complet depuis allSkins
+    const fullSkin = allSkins.find(s => s.id === skinData.skinId);
+    
+    let imageUrl = '';
+    if (fullSkin && fullSkin.splashPath) {
+        const match = fullSkin.splashPath.match(/\/Characters\/([^\/]+)\/.*_(\d+)\.jpg$/);
         if (match) {
             const championName = match[1];
             const skinNum = match[2];
@@ -197,86 +159,24 @@ function createSkinCard(skin) {
         }
     }
     
-    let rarityLabel = 'Standard';
-    let rarityClass = skin.rarity || 'kNoRarity';
-    
-    switch(skin.rarity) {
-        case 'kEpic': rarityLabel = 'Épique'; break;
-        case 'kLegendary': rarityLabel = 'Légendaire'; break;
-        case 'kMythic': rarityLabel = 'Mythique'; break;
-        case 'kUltimate': rarityLabel = 'Ultimate'; break;
-    }
-    
     return `
-        <div class="skin-card owned" data-skin-id="${skin.id}">
+        <div class="skin-card owned" style="border-color: ${rarityInfo.color}; box-shadow: 0 0 20px ${rarityInfo.glow};">
             <div class="skin-image">
                 <img src="${imageUrl}" 
-                     alt="${skin.name}"
+                     alt="${skinData.skinName}"
                      loading="lazy">
             </div>
             <div class="skin-info">
-                <h3 class="skin-name">${skin.name}</h3>
+                <h3 class="skin-name">${skinData.skinName}</h3>
                 <div class="skin-badges">
-                    <span class="skin-badge rarity-badge ${rarityClass}">${rarityLabel}</span>
-                    ${skin.isLegacy ? '<span class="skin-badge legacy-badge">Legacy</span>' : ''}
-                    ${skin.skinLines && skin.skinLines.length > 0 ? 
-                        `<span class="skin-badge skin-line-badge">Line ${skin.skinLines[0].id}</span>` : ''}
-                </div>
-                <div class="skin-actions">
-                    <button class="skin-btn remove" data-action="remove" data-skin-id="${skin.id}">
-                        Retirer de ma collection
-                    </button>
+                    <span class="skin-badge rarity-badge" style="background: ${rarityInfo.color};">${rarityInfo.name}</span>
                 </div>
             </div>
         </div>
     `;
 }
 
-// Ajouter les événements sur les boutons de suppression
-function addRemoveButtonListeners() {
-    const buttons = document.querySelectorAll('.skin-btn.remove');
-    buttons.forEach(button => {
-        button.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            
-            const skinId = parseInt(button.dataset.skinId);
-            button.disabled = true;
-            
-            await removeSkinFromCollection(skinId);
-            
-            button.disabled = false;
-        });
-    });
-}
 
-// Retirer un skin de la collection
-async function removeSkinFromCollection(skinId) {
-    if (!confirm('Voulez-vous vraiment retirer ce skin de votre collection ?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/api/user/skins/${skinId}`, {
-            method: 'DELETE'
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            userSkins = userSkins.filter(id => id !== skinId);
-            updateCollection();
-            window.toast?.success('Skin retiré de votre collection');
-            // Notifier les autres onglets/pages
-            localStorage.setItem('collection-updated', Date.now().toString());
-            window.dispatchEvent(new CustomEvent('collection-updated'));
-        } else {
-            window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
-        }
-    } catch (error) {
-        console.error('Erreur:', error);
-        window.toast?.error('Erreur lors de la suppression du skin');
-    }
-}
 
 // Mettre à jour le compteur
 function updateCount(count) {
