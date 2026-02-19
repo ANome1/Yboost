@@ -81,15 +81,22 @@ git push scalingo main
 ```
 Yboost/
 ├── src/
-│   ├── app.js              # Application principale
 │   ├── assets/
 │   │   └── main.css        # Styles CSS
 │   ├── components/
 │   │   ├── auth.js         # Gestion authentification
 │   │   ├── card.js         # Cartes des champions
 │   │   └── modal.js        # Composant modal
-│   └── data/
-│       └── champion.json   # Données des champions
+│   ├── data/
+│   │   ├── champion.json   # Données des champions
+│   │   └── skins.json      # Données des skins
+│   ├── pages/
+│   │   ├── collection.html # Page collection
+│   │   └── gallery.html    # Page galerie skins
+│   └── script/
+│       ├── app.js          # Application champions
+│       ├── collection.js   # Script collection
+│       └── gallery.js      # Script galerie
 ├── database.js             # Connexion PostgreSQL
 ├── server.js               # Serveur Express
 ├── index.html              # Page principale

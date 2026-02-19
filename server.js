@@ -24,9 +24,27 @@ app.use(session({
 app.use(express.static(__dirname))
 app.use('/src', express.static(path.join(__dirname, 'src')))
 
-// Route pour la page principale
+// Routes pour les pages
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'))
+})
+
+app.get('/gallery', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/pages/gallery.html'))
+})
+
+app.get('/collection', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/pages/collection.html'))
+})
+
+// Route pour la page galerie
+app.get('/gallery.html', function (req, res) {
+  res.sendFile(path.join(__dirname, 'gallery.html'))
+})
+
+// Route pour la page collection
+app.get('/collection.html', function (req, res) {
+  res.sendFile(path.join(__dirname, 'collection.html'))
 })
 
 // Route pour l'API des champions
@@ -97,6 +115,53 @@ app.get('/api/session', function (req, res) {
     })
   } else {
     res.json({ authenticated: false })
+  }
+})
+
+// Routes pour les skins
+app.get('/api/skins', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/data/skins.json'))
+})
+
+// Obtenir les skins d'un utilisateur
+app.get('/api/user/skins', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const skins = await userDB.getUserSkins(req.session.userId)
+  res.json({ success: true, skins: skins })
+})
+
+// Ajouter un skin à la collection
+app.post('/api/user/skins/:skinId', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const skinId = parseInt(req.params.skinId)
+  const result = await userDB.addSkinToUser(req.session.userId, skinId)
+  
+  if (result.success) {
+    res.json({ success: true, message: 'Skin ajouté à votre collection' })
+  } else {
+    res.status(500).json(result)
+  }
+})
+
+// Retirer un skin de la collection
+app.delete('/api/user/skins/:skinId', async function (req, res) {
+  if (!req.session.userId) {
+    return res.status(401).json({ success: false, error: 'Non authentifié' })
+  }
+  
+  const skinId = parseInt(req.params.skinId)
+  const result = await userDB.removeSkinFromUser(req.session.userId, skinId)
+  
+  if (result.success) {
+    res.json({ success: true, message: 'Skin retiré de votre collection' })
+  } else {
+    res.status(500).json(result)
   }
 })
 
