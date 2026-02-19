@@ -20,6 +20,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
 });
 
+// Écouter la connexion de l'utilisateur
+window.addEventListener('user-logged-in', () => {
+    loadUserSkins();
+});
+
+// Écouter la déconnexion
+window.addEventListener('user-logged-out', () => {
+    userSkins = [];
+    if (allSkins.length > 0) {
+        displaySkins(filteredSkins);
+    }
+});
+
 // Recharger les skins utilisateur quand la page devient visible
 document.addEventListener('visibilitychange', () => {
     if (!document.hidden && window.auth?.isAuthenticated()) {
@@ -27,9 +40,15 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Écouter les événements de modification de collection depuis d'autres pages
+// Écouter les événements de modification de collection
 window.addEventListener('storage', (e) => {
     if (e.key === 'collection-updated' && window.auth?.isAuthenticated()) {
+        loadUserSkins();
+    }
+});
+
+window.addEventListener('collection-updated', () => {
+    if (window.auth?.isAuthenticated()) {
         loadUserSkins();
     }
 });
@@ -258,6 +277,7 @@ async function addSkinToCollection(skinId) {
             window.toast?.success('Skin ajouté à votre collection!');
             // Notifier les autres onglets/pages
             localStorage.setItem('collection-updated', Date.now().toString());
+            window.dispatchEvent(new CustomEvent('collection-updated'));
         } else {
             window.toast?.error(data.error || 'Erreur lors de l\'ajout du skin');
         }
@@ -282,6 +302,7 @@ async function removeSkinFromCollection(skinId) {
             window.toast?.success('Skin retiré de votre collection');
             // Notifier les autres onglets/pages
             localStorage.setItem('collection-updated', Date.now().toString());
+            window.dispatchEvent(new CustomEvent('collection-updated'));
         } else {
             window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
         }

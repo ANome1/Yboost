@@ -15,13 +15,36 @@ const mythicCountEl = document.getElementById('mythicCount');
 
 // Charger les données au démarrage
 document.addEventListener('DOMContentLoaded', () => {
-    if (!window.auth?.isAuthenticated()) {
-        showLoginRequired();
-        return;
-    }
+    // Attendre que l'authentification soit vérifiée
+    window.addEventListener('auth-ready', (event) => {
+        if (event.detail.authenticated) {
+            loadAllSkins();
+            setupEventListeners();
+        } else {
+            showLoginRequired();
+        }
+    }, { once: true });
     
+    // Timeout de sécurité si auth-ready ne se déclenche pas
+    setTimeout(() => {
+        if (!window.auth?.isAuthenticated()) {
+            showLoginRequired();
+        } else {
+            loadAllSkins();
+            setupEventListeners();
+        }
+    }, 1000);
+});
+
+// Écouter la connexion de l'utilisateur
+window.addEventListener('user-logged-in', () => {
     loadAllSkins();
     setupEventListeners();
+});
+
+// Écouter la déconnexion
+window.addEventListener('user-logged-out', () => {
+    showLoginRequired();
 });
 
 // Recharger la collection quand la page devient visible
@@ -31,9 +54,15 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Écouter les événements de modification de collection depuis d'autres pages
+// Écouter les événements de modification de collection
 window.addEventListener('storage', (e) => {
     if (e.key === 'collection-updated' && window.auth?.isAuthenticated()) {
+        loadAllSkins();
+    }
+});
+
+window.addEventListener('collection-updated', () => {
+    if (window.auth?.isAuthenticated()) {
         loadAllSkins();
     }
 });
@@ -239,6 +268,7 @@ async function removeSkinFromCollection(skinId) {
             window.toast?.success('Skin retiré de votre collection');
             // Notifier les autres onglets/pages
             localStorage.setItem('collection-updated', Date.now().toString());
+            window.dispatchEvent(new CustomEvent('collection-updated'));
         } else {
             window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
         }

@@ -64,6 +64,8 @@ loginForm.addEventListener('submit', async (e) => {
             updateAuthUI();
             closeAuthModal();
             loginForm.reset();
+            // Notifier que l'utilisateur s'est connecté
+            window.dispatchEvent(new CustomEvent('user-logged-in', { detail: { user: currentUser } }));
         } else {
             showError('loginError', data.error || 'Erreur de connexion');
         }
@@ -134,9 +136,14 @@ async function checkSession() {
         if (data.authenticated) {
             currentUser = { pseudo: data.pseudo };
             updateAuthUI();
+            // Notifier les autres scripts que l'authentification est prête
+            window.dispatchEvent(new CustomEvent('auth-ready', { detail: { authenticated: true, user: currentUser } }));
+        } else {
+            window.dispatchEvent(new CustomEvent('auth-ready', { detail: { authenticated: false } }));
         }
     } catch (error) {
         console.error('Erreur lors de la vérification de session:', error);
+        window.dispatchEvent(new CustomEvent('auth-ready', { detail: { authenticated: false } }));
     }
 }
 
@@ -150,6 +157,12 @@ async function logout() {
         if (response.ok) {
             currentUser = null;
             updateAuthUI();
+            // Notifier que l'utilisateur s'est déconnecté
+            window.dispatchEvent(new CustomEvent('user-logged-out'));
+            // Rediriger vers la page d'accueil si on est sur collection
+            if (window.location.pathname === '/collection') {
+                window.location.href = '/';
+            }
         }
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error);
