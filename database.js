@@ -9,6 +9,9 @@ const pool = new Pool({
   } : false
 });
 
+// Variable pour savoir si la DB est disponible
+let dbAvailable = false;
+
 // Initialiser la base de données
 async function initDatabase() {
   try {
@@ -38,11 +41,18 @@ async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_user_skins_user_id ON user_skins(user_id)
     `);
     
+    dbAvailable = true;
     console.log('✅ Base de données PostgreSQL initialisée');
     console.log('📊 Connecté à:', process.env.DATABASE_URL ? 'PostgreSQL (Scalingo)' : 'PostgreSQL (Local)');
   } catch (error) {
-    console.error('❌ Erreur initialisation base de données:', error.message);
-    process.exit(1);
+    console.error('⚠️  Base de données non disponible:', error.message);
+    console.log('⚠️  Mode sans authentification - Les fonctionnalités utilisateur sont désactivées');
+    dbAvailable = false;
+    // Ne pas quitter le processus en mode dev sans DATABASE_URL
+    if (process.env.DATABASE_URL) {
+      console.error('❌ Erreur critique en production');
+      process.exit(1);
+    }
   }
 }
 
@@ -184,3 +194,4 @@ const userDB = {
 };
 
 module.exports = userDB;
+module.exports.isDbAvailable = () => dbAvailable;

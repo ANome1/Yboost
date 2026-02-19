@@ -37,16 +37,6 @@ app.get('/collection', function (req, res) {
   res.sendFile(path.join(__dirname, 'src/pages/collection.html'))
 })
 
-// Route pour la page galerie
-app.get('/gallery.html', function (req, res) {
-  res.sendFile(path.join(__dirname, 'gallery.html'))
-})
-
-// Route pour la page collection
-app.get('/collection.html', function (req, res) {
-  res.sendFile(path.join(__dirname, 'collection.html'))
-})
-
 // Route pour l'API des champions
 app.get('/api/champions', function (req, res) {
   res.sendFile(path.join(__dirname, 'src/data/champion.json'))
