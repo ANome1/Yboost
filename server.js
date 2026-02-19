@@ -1,6 +1,7 @@
 var express = require('express')
 var path = require('path')
 var session = require('express-session')
+require('dotenv').config()
 var userDB = require('./database')
 var app = express()
 
@@ -34,7 +35,7 @@ app.get('/api/champions', function (req, res) {
 })
 
 // Routes d'authentification
-app.post('/api/register', function (req, res) {
+app.post('/api/register', async function (req, res) {
   const { pseudo, motDePasse } = req.body
   
   if (!pseudo || !motDePasse) {
@@ -49,7 +50,7 @@ app.post('/api/register', function (req, res) {
     return res.status(400).json({ success: false, error: 'Le mot de passe doit contenir au moins 6 caractères' })
   }
   
-  const result = userDB.createUser(pseudo, motDePasse)
+  const result = await userDB.createUser(pseudo, motDePasse)
   
   if (result.success) {
     req.session.userId = result.userId
@@ -60,14 +61,14 @@ app.post('/api/register', function (req, res) {
   }
 })
 
-app.post('/api/login', function (req, res) {
+app.post('/api/login', async function (req, res) {
   const { pseudo, motDePasse } = req.body
   
   if (!pseudo || !motDePasse) {
     return res.status(400).json({ success: false, error: 'Pseudo et mot de passe requis' })
   }
   
-  const result = userDB.verifyUser(pseudo, motDePasse)
+  const result = await userDB.verifyUser(pseudo, motDePasse)
   
   if (result.success) {
     req.session.userId = result.user.id
@@ -100,7 +101,6 @@ app.get('/api/session', function (req, res) {
 })
 
 var server = app.listen(process.env.PORT || 3000, function () {
-  var host = server.address().address
-  var port = server.address().port
-  console.log('Yboost server listening on port', port)
+  var port = process.env.PORT || 3000
+  console.log('✅ Yboost server listening on port', port)
 })
