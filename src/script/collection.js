@@ -222,12 +222,13 @@ async function removeSkinFromCollection(skinId) {
         if (data.success) {
             userSkins = userSkins.filter(id => id !== skinId);
             updateCollection();
+            window.toast?.success('Skin retiré de votre collection');
         } else {
-            alert(data.error || 'Erreur lors de la suppression du skin');
+            window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
         }
     } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur lors de la suppression du skin');
+        window.toast?.error('Erreur lors de la suppression du skin');
     }
 }
 

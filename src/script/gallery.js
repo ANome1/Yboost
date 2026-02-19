@@ -241,12 +241,13 @@ async function addSkinToCollection(skinId) {
         if (data.success) {
             userSkins.push(skinId);
             displaySkins(filteredSkins);
+            window.toast?.success('Skin ajouté à votre collection!');
         } else {
-            alert(data.error || 'Erreur lors de l\'ajout du skin');
+            window.toast?.error(data.error || 'Erreur lors de l\'ajout du skin');
         }
     } catch (error) {
         console.error('Erreur:', error);
-        alert('Erreur lors de l\'ajout du skin');
+        window.toast?.error('Erreur lors de l\'ajout du skin');
     }
 }
 
@@ -262,8 +263,9 @@ async function removeSkinFromCollection(skinId) {
         if (data.success) {
             userSkins = userSkins.filter(id => id !== skinId);
             displaySkins(filteredSkins);
+            window.toast?.success('Skin retiré de votre collection');
         } else {
-            alert(data.error || 'Erreur lors de la suppression du skin');
+            window.toast?.error(data.error || 'Erreur lors de la suppression du skin');
         }
     } catch (error) {
         console.error('Erreur:', error);
