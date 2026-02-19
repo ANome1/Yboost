@@ -84,14 +84,15 @@ Yboost/
 │   ├── app.js              # Application principale
 │   ├── assets/
 │   │   └── main.css        # Styles CSS
-│   └── components/
-│       ├── auth.js         # Gestion authentification
-│       ├── card.js         # Cartes des champions
-│       └── modal.js        # Composant modal
+│   ├── components/
+│   │   ├── auth.js         # Gestion authentification
+│   │   ├── card.js         # Cartes des champions
+│   │   └── modal.js        # Composant modal
+│   └── data/
+│       └── champion.json   # Données des champions
 ├── database.js             # Connexion PostgreSQL
 ├── server.js               # Serveur Express
 ├── index.html              # Page principale
-├── champion.json           # Données des champions
 └── package.json            # Dépendances
 
 ```

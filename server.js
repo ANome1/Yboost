@@ -31,7 +31,7 @@ app.get('/', function (req, res) {
 
 // Route pour l'API des champions
 app.get('/api/champions', function (req, res) {
-  res.sendFile(path.join(__dirname, 'champion.json'))
+  res.sendFile(path.join(__dirname, 'src/data/champion.json'))
 })
 
 // Routes d'authentification
