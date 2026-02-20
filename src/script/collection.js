@@ -51,9 +51,25 @@ async function loadAllSkins() {
         const skinsData = await skinsResponse.json();
         allSkins = Object.values(skinsData);
         
-        // Charger la collection depuis localStorage
-        const collectionData = localStorage.getItem('skinCollection');
-        const rawSkins = collectionData ? JSON.parse(collectionData) : [];
+        let rawSkins = [];
+        
+        // Vérifier si l'utilisateur est connecté
+        if (typeof currentUser !== 'undefined' && currentUser) {
+            // Charger depuis la base de données
+            const response = await fetch('/api/user/skins');
+            
+            if (response.ok) {
+                rawSkins = await response.json();
+                console.log('✅ Collection chargée depuis la BDD:', rawSkins.length);
+            } else {
+                console.error('Erreur lors du chargement depuis la BDD');
+                showToast('❌ Erreur lors du chargement de la collection', 'error');
+            }
+        } else {
+            // Utilisateur non connecté - afficher un message
+            showToast('⚠️ Connectez-vous pour voir votre collection', 'warning');
+            rawSkins = [];
+        }
         
         // Compter les doublons
         skinCounts = {};

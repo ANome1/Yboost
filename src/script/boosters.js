@@ -80,7 +80,16 @@ async function handleBoosterPurchase(event) {
     const btn = event.target;
     const count = parseInt(btn.dataset.count);
 
-    // Ouvrir le booster directement (gratuit)
+    // Vérifier l'authentification avant d'ouvrir un booster
+    if (typeof currentUser === 'undefined' || !currentUser) {
+        showToast('⚠️ Connectez-vous pour ouvrir des boosters !', 'warning');
+        if (typeof showAuthModal === 'function') {
+            showAuthModal();
+        }
+        return;
+    }
+
+    // Ouvrir le booster
     openBooster(count);
 }
 
@@ -317,9 +326,6 @@ async function closeOpening(skins) {
 // Sauvegarder les skins obtenus (désactivé - pas de BDD)
 async function saveObtainedSkins(skins) {
     try {
-        // Sauvegarde locale dans le localStorage
-        const collection = JSON.parse(localStorage.getItem('skinCollection') || '[]');
-        
         const skinsData = skins.map(skin => ({
             skinId: skin.id,
             skinName: skin.name,
@@ -327,14 +333,32 @@ async function saveObtainedSkins(skins) {
             dateObtained: new Date().toISOString()
         }));
         
-        collection.push(...skinsData);
-        localStorage.setItem('skinCollection', JSON.stringify(collection));
-        
-        console.log('✅ Skins sauvegardés localement:', skinsData.length);
+        // Vérifier si l'utilisateur est connecté (si currentUser existe dans auth.js)
+        if (typeof currentUser !== 'undefined' && currentUser) {
+            // Sauvegarder dans la base de données
+            const response = await fetch('/api/user/skins', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ skins: skinsData })
+            });
+            
+            if (response.ok) {
+                console.log('✅ Skins sauvegardés dans la base de données:', skinsData.length);
+            } else {
+                console.error('Erreur lors de la sauvegarde en BDD');
+                showToast('❌ Erreur lors de la sauvegarde', 'error');
+            }
+        } else {
+            // Utilisateur non connecté - bloquer l'action
+            showToast('❌ Vous devez être connecté pour sauvegarder vos skins !', 'error');
+            console.error('Tentative de sauvegarde sans authentification');
+        }
     } catch (error) {
         console.error('Erreur lors de la sauvegarde des skins:', error);
+        showToast('❌ Erreur lors de la sauvegarde', 'error');
     }
 }
+
 
 // Afficher un résumé
 function showSummaryToast(skins) {

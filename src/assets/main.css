@@ -1163,3 +1163,157 @@ select {
 .error {
     color: #ef4444;
 }
+
+/* Bouton d'authentification */
+.auth-button {
+    background: linear-gradient(135deg, var(--secondary-color), #d4a748);
+    color: #000;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(200, 155, 60, 0.3);
+}
+
+.auth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 155, 60, 0.4);
+}
+
+/* Modal d'authentification */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: var(--text-muted);
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-modal:hover {
+    color: var(--text-color);
+}
+
+/* Onglets d'authentification */
+.auth-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.auth-tab {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.auth-tab:hover {
+    color: var(--text-color);
+}
+
+.auth-tab.active {
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+}
+
+/* Formulaires d'authentification */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form h2 {
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 0.9rem;
+    margin-bottom: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.auth-form input::placeholder {
+    color: var(--text-muted);
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 10px rgba(200, 155, 60, 0.2);
+}
+
+.auth-form button {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, var(--secondary-color), #d4a748);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 0.5rem;
+}
+
+.auth-form button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(200, 155, 60, 0.4);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    min-height: 20px;
+}
