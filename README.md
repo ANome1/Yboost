@@ -1,4 +1,90 @@
-# Yboost - Plateforme League of Legends
+# 🎮 Yboost - Ouverture de Boosters League of Legends
+
+Site web d'ouverture de boosters de skins League of Legends avec système de raretés.
+
+## ✨ Fonctionnalités
+
+- 🎁 Ouverture de boosters de skins aléatoires
+- ⭐ Système de raretés (Standard, Épique, Légendaire, Mythique, Ultimate)
+- 🎨 Interface graphique moderne et animée
+- 💾 Sauvegarde locale dans le navigateur (localStorage)
+- 🚀 Aucune base de données requise
+
+## 🚀 Installation
+
+1. Cloner le repository
+```bash
+git clone https://github.com/ANome1/Yboost.git
+cd Yboost
+```
+
+2. Installer les dépendances
+```bash
+npm install
+```
+
+3. Lancer le serveur
+```bash
+npm start
+```
+
+4. Ouvrir le navigateur à l'adresse : `http://localhost:3000`
+
+## 📁 Structure du Projet
+
+```
+Yboost/
+├── index.html              # Page principale (boosters)
+├── server.js               # Serveur Express simplifié
+├── package.json            # Dépendances
+├── src/
+│   ├── assets/
+│   │   └── main.css       # Styles CSS
+│   ├── components/
+│   │   ├── card.js        # Composant carte
+│   │   ├── modal.js       # Composant modal
+│   │   └── toast.js       # Notifications toast
+│   ├── data/
+│   │   ├── champion.json  # Données des champions
+│   │   └── skins.json     # Données des skins
+│   └── script/
+│       └── boosters.js    # Logique d'ouverture de boosters
+```
+
+## 🎲 Comment ça marche ?
+
+1. Cliquez sur "Ouvrir le Booster"
+2. Les cartes apparaissent face cachée
+3. Cliquez sur chaque carte pour la révéler
+4. Ou utilisez le bouton "Tout Révéler"
+5. Vos skins sont sauvegardés automatiquement dans le navigateur
+
+## 🎨 Raretés
+
+- ⚪ **Standard** (kNoRarity) - 40% de chance
+- 🟣 **Épique** (kEpic) - 35% de chance
+- 🟡 **Légendaire** (kLegendary) - 20% de chance
+- 🔴 **Mythique** (kMythic) - 5% de chance
+- 💎 **Ultimate** (kUltimate) - Très rare
+
+## 🔧 Technologies
+
+- Node.js + Express
+- HTML5 / CSS3 / JavaScript
+- LocalStorage pour la persistance
+- Data Dragon API (images des skins)
+
+## ⚠️ Note
+
+Ce projet n'est pas affilié à Riot Games. League of Legends et tous les assets associés sont la propriété de Riot Games.
+
+## 📝 License
+
+ISC
+
+## 👤 Auteur
+
+PrettyFlacko - Plateforme League of Legends
 
 Application web pour explorer les champions de League of Legends avec système d'authentification.
 

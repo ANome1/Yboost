@@ -170,20 +170,18 @@ function displayOpeningAnimation(skins, boosterName) {
     openingZone.classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Empêcher le scroll
     
-    // Animation d'entrée des cartes
+    // Afficher toutes les cartes immédiatement
     setTimeout(() => {
         const cards = cardsContainer.querySelectorAll('.pack-card');
-        cards.forEach((card, index) => {
-            setTimeout(() => {
-                card.classList.add('enter');
-            }, index * 150);
+        cards.forEach((card) => {
+            card.classList.add('enter');
         });
     }, 100);
     
     // Afficher le bouton "Tout révéler" après un délai
     setTimeout(() => {
         revealAllBtn.classList.remove('hidden');
-    }, validSkins.length * 150 + 1000);
+    }, 800);
     
     // Configuration des événements
     revealAllBtn.onclick = () => revealAllCards(validSkins);
@@ -310,24 +308,23 @@ async function closeOpening(skins) {
     }, 500);
 }
 
-// Sauvegarder les skins obtenus
+// Sauvegarder les skins obtenus (désactivé - pas de BDD)
 async function saveObtainedSkins(skins) {
     try {
+        // Sauvegarde locale dans le localStorage
+        const collection = JSON.parse(localStorage.getItem('skinCollection') || '[]');
+        
         const skinsData = skins.map(skin => ({
             skinId: skin.id,
             skinName: skin.name,
-            rarity: skin.rarity || 'kNoRarity'
+            rarity: skin.rarity || 'kNoRarity',
+            dateObtained: new Date().toISOString()
         }));
         
-        await fetch('/api/user/skins', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ skins: skinsData })
-        });
+        collection.push(...skinsData);
+        localStorage.setItem('skinCollection', JSON.stringify(collection));
         
-        // Notifier les autres pages que la collection a été mise à jour
-        localStorage.setItem('collection-updated', Date.now().toString());
-        window.dispatchEvent(new CustomEvent('collection-updated'));
+        console.log('✅ Skins sauvegardés localement:', skinsData.length);
     } catch (error) {
         console.error('Erreur lors de la sauvegarde des skins:', error);
     }
