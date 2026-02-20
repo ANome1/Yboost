@@ -159,6 +159,49 @@ app.post('/api/user/skins', async function (req, res) {
   }
 })
 
+// Route de stress test - générer beaucoup de skins aléatoires
+app.post('/api/stress-test', async function (req, res) {
+  if (!req.session.user) {
+    return res.status(401).json({ error: 'Non authentifié' })
+  }
+  
+  try {
+    const fs = require('fs')
+    const path = require('path')
+    
+    // Charger tous les skins disponibles
+    const skinsPath = path.join(__dirname, 'src/data/skins.json')
+    const skinsData = JSON.parse(fs.readFileSync(skinsPath, 'utf8'))
+    const allSkins = Object.values(skinsData)
+    
+    // Générer 100 skins aléatoires
+    const randomSkins = []
+    const COUNT = 100
+    
+    for (let i = 0; i < COUNT; i++) {
+      const randomSkin = allSkins[Math.floor(Math.random() * allSkins.length)]
+      randomSkins.push({
+        skinId: randomSkin.id,
+        skinName: randomSkin.name,
+        rarity: randomSkin.rarity || 'kNoRarity'
+      })
+    }
+    
+    // Ajouter tous les skins à la base de données
+    const result = await db.addSkinsToUser(req.session.user.id, randomSkins)
+    
+    if (result.success) {
+      console.log(`🚀 Stress test: ${COUNT} skins générés pour l'utilisateur ${req.session.user.pseudo}`)
+      res.json({ success: true, count: COUNT })
+    } else {
+      res.status(500).json({ error: result.error })
+    }
+  } catch (error) {
+    console.error('Erreur stress test:', error)
+    res.status(500).json({ error: 'Erreur serveur' })
+  }
+})
+
 // Initialiser la base de données avant de démarrer le serveur
 async function startServer() {
   await db.initDatabase()
