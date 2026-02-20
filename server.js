@@ -179,24 +179,36 @@ app.post('/api/user/skins', async function (req, res) {
   }
 })
 
-// Route de stress test - générer beaucoup de skins aléatoires
+// Route de stress test - MAXIMUM DE CONSOMMATION DE RESSOURCES
 app.post('/api/stress-test', async function (req, res) {
   if (!req.session.user) {
     return res.status(401).json({ error: 'Non authentifié' })
   }
   
+  const startTime = Date.now()
+  let totalOperations = 0
+  
   try {
     const fs = require('fs')
+    const crypto = require('crypto')
     const path = require('path')
     
-    // Charger tous les skins disponibles
-    const skinsPath = path.join(__dirname, 'src/data/skins.json')
-    const skinsData = JSON.parse(fs.readFileSync(skinsPath, 'utf8'))
-    const allSkins = Object.values(skinsData)
+    logger.warn(`🔥 STRESS TEST DÉMARRÉ pour ${req.session.user.pseudo} (ID: ${req.session.user.id})`)
     
-    // Générer 100 skins aléatoires
+    // 1. CHARGER ET PARSER LE FICHIER JSON PLUSIEURS FOIS (I/O intensif)
+    const skinsPath = path.join(__dirname, 'src/data/skins.json')
+    let allSkins = []
+    for (let i = 0; i < 10; i++) {
+      const skinsData = JSON.parse(fs.readFileSync(skinsPath, 'utf8'))
+      allSkins = Object.values(skinsData)
+      totalOperations += allSkins.length
+      logger.debug(`Parsing iteration ${i+1}/10 - ${allSkins.length} skins chargés`)
+    }
+    
+    // 2. GÉNÉRER 5000 SKINS ALÉATOIRES
+    const COUNT = 5000
     const randomSkins = []
-    const COUNT = 100
+    logger.info(`Génération de ${COUNT} skins aléatoires...`)
     
     for (let i = 0; i < COUNT; i++) {
       const randomSkin = allSkins[Math.floor(Math.random() * allSkins.length)]
@@ -205,20 +217,121 @@ app.post('/api/stress-test', async function (req, res) {
         skinName: randomSkin.name,
         rarity: randomSkin.rarity || 'kNoRarity'
       })
+      totalOperations++
     }
     
-    // Ajouter tous les skins à la base de données
+    // 3. CALCULS CPU INTENSIFS - Hashing cryptographique
+    logger.info('Calculs cryptographiques intensifs...')
+    const hashes = []
+    for (let i = 0; i < 1000; i++) {
+      const hash = crypto.createHash('sha512')
+      for (let j = 0; j < 100; j++) {
+        hash.update(`${req.session.user.pseudo}-${i}-${j}-${Date.now()}`)
+      }
+      hashes.push(hash.digest('hex'))
+      totalOperations += 100
+    }
+    
+    // 4. MANIPULATION DE TABLEAUX MASSIFS (Mémoire intensive)
+    logger.info('Manipulation de tableaux massifs...')
+    const massiveArray = Array(100000).fill(0).map((_, i) => ({
+      id: i,
+      value: Math.random() * 1000000,
+      hash: crypto.randomBytes(32).toString('hex')
+    }))
+    totalOperations += massiveArray.length
+    
+    // 5. TRI ET FILTRAGE RÉPÉTÉS (CPU intensif)
+    logger.info('Tris et filtrages répétés...')
+    for (let i = 0; i < 5; i++) {
+      massiveArray.sort((a, b) => b.value - a.value)
+      const filtered = massiveArray.filter(item => item.value > 500000)
+      totalOperations += massiveArray.length * 2
+      logger.debug(`Tri ${i+1}/5 - ${filtered.length} éléments filtrés`)
+    }
+    
+    // 6. SÉRIALISATION/DÉSÉRIALISATION JSON MASSIVE
+    logger.info('Sérialisations JSON massives...')
+    for (let i = 0; i < 20; i++) {
+      const jsonStr = JSON.stringify(massiveArray)
+      const parsed = JSON.parse(jsonStr)
+      totalOperations += parsed.length * 2
+    }
+    
+    // 7. OPÉRATIONS MATHÉMATIQUES COMPLEXES
+    logger.info('Calculs mathématiques complexes...')
+    let mathResult = 0
+    for (let i = 0; i < 1000000; i++) {
+      mathResult += Math.sqrt(i) * Math.sin(i) * Math.cos(i) / (Math.log(i + 1) + 1)
+      totalOperations++
+    }
+    
+    // 8. GÉNÉRATION DE DONNÉES ALÉATOIRES MASSIVES
+    logger.info('Génération de données aléatoires...')
+    const randomData = []
+    for (let i = 0; i < 50000; i++) {
+      randomData.push({
+        id: crypto.randomUUID(),
+        data: crypto.randomBytes(256).toString('base64'),
+        timestamp: Date.now(),
+        random: Math.random()
+      })
+      totalOperations++
+    }
+    
+    // 9. CONCATÉNATIONS DE STRINGS MASSIVES
+    logger.info('Concaténations de strings massives...')
+    let massiveString = ''
+    for (let i = 0; i < 10000; i++) {
+      massiveString += `User-${req.session.user.pseudo}-Iteration-${i}-Hash-${crypto.randomBytes(16).toString('hex')}\n`
+      totalOperations++
+    }
+    
+    // 10. INSERTIONS EN BASE DE DONNÉES PAR LOTS
+    logger.info(`Insertion en base de données de ${COUNT} skins...`)
     const result = await db.addSkinsToUser(req.session.user.id, randomSkins)
     
-    if (result.success) {
-      logger.warn(`STRESS TEST: ${COUNT} skins générés pour ${req.session.user.pseudo} (ID: ${req.session.user.id})`)
-      res.json({ success: true, count: COUNT })
-    } else {
-      res.status(500).json({ error: result.error })
+    if (!result.success) {
+      throw new Error(result.error)
     }
+    
+    // 11. LECTURE MULTIPLE DE LA BASE DE DONNÉES
+    logger.info('Lectures multiples de la base de données...')
+    for (let i = 0; i < 10; i++) {
+      const userSkins = await db.getUserSkins(req.session.user.id)
+      totalOperations += userSkins.length
+      logger.debug(`Lecture BDD ${i+1}/10 - ${userSkins.length} skins`)
+    }
+    
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2)
+    const memUsage = process.memoryUsage()
+    
+    logger.warn(`🔥 STRESS TEST TERMINÉ pour ${req.session.user.pseudo}:`)
+    logger.warn(`   - Durée: ${duration}s`)
+    logger.warn(`   - Skins générés: ${COUNT}`)
+    logger.warn(`   - Opérations totales: ${totalOperations.toLocaleString()}`)
+    logger.warn(`   - Mémoire heap utilisée: ${(memUsage.heapUsed / 1024 / 1024).toFixed(2)} MB`)
+    logger.warn(`   - Mémoire heap totale: ${(memUsage.heapTotal / 1024 / 1024).toFixed(2)} MB`)
+    logger.warn(`   - Résultat calcul math: ${mathResult.toFixed(6)}`)
+    logger.warn(`   - Hashes générés: ${hashes.length}`)
+    logger.warn(`   - Taille tableau massif: ${massiveArray.length}`)
+    logger.warn(`   - Données aléatoires: ${randomData.length}`)
+    logger.warn(`   - Taille string massive: ${massiveString.length} caractères`)
+    
+    res.json({ 
+      success: true, 
+      count: COUNT,
+      operations: totalOperations,
+      duration: duration,
+      memory: {
+        heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2) + ' MB',
+        heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2) + ' MB'
+      }
+    })
   } catch (error) {
-    logger.error('Erreur stress test:', error)
-    res.status(500).json({ error: 'Erreur serveur' })
+    const duration = ((Date.now() - startTime) / 1000).toFixed(2)
+    logger.error(`Erreur stress test après ${duration}s:`, error)
+    res.status(500).json({ error: 'Erreur serveur durant le stress test' })
   }
 })
 
