@@ -12,7 +12,6 @@ class Modal {
                 <div id="championModal" class="modal">
                     <div class="modal-overlay"></div>
                     <div class="modal-content">
-                        <button class="modal-close" aria-label="Fermer">×</button>
                         <div id="modalBody" class="modal-body"></div>
                     </div>
                 </div>
