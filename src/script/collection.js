@@ -2,6 +2,7 @@
 let allSkins = [];
 let userSkins = [];
 let filteredSkins = [];
+let skinCounts = {}; // Pour compter les doublons
 
 // Éléments DOM
 const collectionGrid = document.getElementById('collectionGrid');
@@ -10,6 +11,7 @@ const collectionRarityFilter = document.getElementById('collectionRarityFilter')
 const collectionCount = document.getElementById('collectionCount');
 const emptyCollection = document.getElementById('emptyCollection');
 const totalSkinsEl = document.getElementById('totalSkins');
+const uniqueSkinsEl = document.getElementById('uniqueSkins');
 const legendaryCountEl = document.getElementById('legendaryCount');
 const mythicCountEl = document.getElementById('mythicCount');
 
@@ -30,13 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Écouter les mises à jour de collection
 window.addEventListener('storage', (e) => {
-    if (e.key === 'collection-updated') {
+    if (e.key === 'skinCollection') {
         loadAllSkins();
     }
-});
-
-window.addEventListener('collection-updated', () => {
-    loadAllSkins();
 });
 
 // Configuration des écouteurs d'événements
@@ -45,28 +43,36 @@ function setupEventListeners() {
     collectionRarityFilter?.addEventListener('change', filterCollection);
 }
 
-
-
 // Charger tous les skins obtenus
 async function loadAllSkins() {
     try {
-        const [skinsResponse, userSkinsResponse] = await Promise.all([
-            fetch('/api/skins'),
-            fetch('/api/user/skins')
-        ]);
-        
+        // Charger les données de tous les skins depuis l'API
+        const skinsResponse = await fetch('/api/skins');
         const skinsData = await skinsResponse.json();
-        const userSkinsData = await userSkinsResponse.json();
-        
-        // Tous les skins disponibles
         allSkins = Object.values(skinsData);
         
-        // Skins obtenus par l'utilisateur (avec raretés)
-        if (userSkinsData.success) {
-            userSkins = userSkinsData.skins || [];
-        } else {
-            userSkins = [];
-        }
+        // Charger la collection depuis localStorage
+        const collectionData = localStorage.getItem('skinCollection');
+        const rawSkins = collectionData ? JSON.parse(collectionData) : [];
+        
+        // Compter les doublons
+        skinCounts = {};
+        rawSkins.forEach(skin => {
+            const key = skin.skinId;
+            if (!skinCounts[key]) {
+                skinCounts[key] = {
+                    count: 0,
+                    skin: skin
+                };
+            }
+            skinCounts[key].count++;
+        });
+        
+        // Créer un tableau de skins uniques avec leur compte
+        userSkins = Object.values(skinCounts).map(item => ({
+            ...item.skin,
+            count: item.count
+        }));
         
         // Afficher la collection
         updateCollection();
@@ -78,27 +84,30 @@ async function loadAllSkins() {
 
 // Mettre à jour la collection
 function updateCollection() {
-    // Les skins avec leurs raretés
     filteredSkins = userSkins;
     
+    // Calculer le total de skins (avec doublons)
+    const totalCount = userSkins.reduce((sum, skin) => sum + skin.count, 0);
+    
     // Mettre à jour les statistiques
-    updateStats(userSkins);
+    updateStats(userSkins, totalCount);
     
     // Afficher
     if (userSkins.length === 0) {
         showEmptyState();
     } else {
         displayCollection(userSkins);
-        updateCount(userSkins.length);
+        updateCount(userSkins.length, totalCount);
     }
 }
 
 // Mettre à jour les statistiques
-function updateStats(skins) {
-    const legendary = skins.filter(s => s.rarity === 'kLegendary').length;
-    const mythic = skins.filter(s => s.rarity === 'kMythic' || s.rarity === 'kUltimate').length;
+function updateStats(skins, totalCount) {
+    const legendary = skins.filter(s => s.rarity === 'kLegendary').reduce((sum, s) => sum + s.count, 0);
+    const mythic = skins.filter(s => s.rarity === 'kMythic' || s.rarity === 'kUltimate').reduce((sum, s) => sum + s.count, 0);
     
-    if (totalSkinsEl) totalSkinsEl.textContent = skins.length;
+    if (totalSkinsEl) totalSkinsEl.textContent = totalCount;
+    if (uniqueSkinsEl) uniqueSkinsEl.textContent = skins.length;
     if (legendaryCountEl) legendaryCountEl.textContent = legendary;
     if (mythicCountEl) mythicCountEl.textContent = mythic;
 }
@@ -123,8 +132,9 @@ function filterCollection() {
         return matchesSearch && matchesRarity;
     });
     
+    const totalFiltered = filteredSkins.reduce((sum, skin) => sum + skin.count, 0);
     displayCollection(filteredSkins);
-    updateCount(filteredSkins.length);
+    updateCount(filteredSkins.length, totalFiltered);
 }
 
 // Afficher la collection
@@ -159,12 +169,17 @@ function createSkinCard(skinData) {
         }
     }
     
+    // Badge de compte si > 1
+    const countBadge = skinData.count > 1 ? `<span class="skin-count-badge">x${skinData.count}</span>` : '';
+    
     return `
         <div class="skin-card owned" style="border-color: ${rarityInfo.color}; box-shadow: 0 0 20px ${rarityInfo.glow};">
+            ${countBadge}
             <div class="skin-image">
                 <img src="${imageUrl}" 
                      alt="${skinData.skinName}"
-                     loading="lazy">
+                     loading="lazy"
+                     onerror="this.style.opacity='0.5'">
             </div>
             <div class="skin-info">
                 <h3 class="skin-name">${skinData.skinName}</h3>
@@ -176,11 +191,13 @@ function createSkinCard(skinData) {
     `;
 }
 
-
-
 // Mettre à jour le compteur
-function updateCount(count) {
+function updateCount(uniqueCount, totalCount) {
     if (collectionCount) {
-        collectionCount.textContent = `${count} skin${count > 1 ? 's' : ''} dans votre collection`;
+        if (uniqueCount === totalCount) {
+            collectionCount.textContent = `${totalCount} skin${totalCount > 1 ? 's' : ''} dans votre collection`;
+        } else {
+            collectionCount.textContent = `${totalCount} skin${totalCount > 1 ? 's' : ''} (${uniqueCount} unique${uniqueCount > 1 ? 's' : ''}) dans votre collection`;
+        }
     }
 }

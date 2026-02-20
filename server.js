@@ -16,10 +16,6 @@ app.get('/', function (req, res) {
 })
 
 // Routes API pour les données
-app.get('/api/champions', function (req, res) {
-  res.sendFile(path.join(__dirname, 'src/data/champion.json'))
-})
-
 app.get('/api/skins', function (req, res) {
   res.sendFile(path.join(__dirname, 'src/data/skins.json'))
 })

@@ -1,7 +1,7 @@
 // Variables globales
-let allChampions = [];
 let allSkins = [];
 let championSkins = {}; // Mapping champion ID -> skins
+let championsList = []; // Liste des champions disponibles
 
 // Système de rareté pour les skins (basé sur le système LoL)
 const RARITIES = {
@@ -14,7 +14,7 @@ const RARITIES = {
 
 // Configuration du booster
 const BOOSTER_CONFIG = {
-    name: 'Pack de Champions',
+    name: 'Pack de Skins',
     count: 5
 };
 
@@ -24,24 +24,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBoosterButtons();
 });
 
-// Charger les champions et skins
+// Charger uniquement les skins
 async function loadData() {
     try {
-        const [championsResponse, skinsResponse] = await Promise.all([
-            fetch('/api/champions'),
-            fetch('/api/skins')
-        ]);
-        
-        const championsData = await championsResponse.json();
+        const skinsResponse = await fetch('/api/skins');
         const skinsData = await skinsResponse.json();
         
-        allChampions = Object.values(championsData.data || championsData);
         allSkins = Object.values(skinsData);
         
         // Créer un mapping champion -> skins
         createChampionSkinMapping();
         
-        console.log(`${allChampions.length} champions et ${allSkins.length} skins chargés`);
+        console.log(`${allSkins.length} skins chargés pour ${championsList.length} champions`);
     } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
     }
@@ -65,7 +59,10 @@ function createChampionSkinMapping() {
         }
     });
     
-    console.log(`Mapping créé pour ${Object.keys(championSkins).length} champions`);
+    // Créer la liste des champions disponibles
+    championsList = Object.keys(championSkins);
+    
+    console.log(`Mapping créé pour ${championsList.length} champions`);
 }
 
 
@@ -100,10 +97,10 @@ function generateBoosterContent(count) {
     
     for (let i = 0; i < count; i++) {
         // Sélectionner un champion aléatoire
-        const champion = selectRandomChampion();
+        const championId = selectRandomChampion();
         
         // Sélectionner un skin aléatoire pour ce champion
-        const skin = selectRandomSkinForChampion(champion);
+        const skin = selectRandomSkinForChampion(championId);
         
         if (skin) {
             obtainedSkins.push(skin);
@@ -115,16 +112,25 @@ function generateBoosterContent(count) {
 
 // Sélectionner un champion au hasard
 function selectRandomChampion() {
-    const randomIndex = Math.floor(Math.random() * allChampions.length);
-    return allChampions[randomIndex];
+    if (!championsList || championsList.length === 0) {
+        console.error('Aucun champion disponible');
+        return null;
+    }
+    const randomIndex = Math.floor(Math.random() * championsList.length);
+    return championsList[randomIndex];
 }
 
 // Sélectionner un skin aléatoire pour un champion
-function selectRandomSkinForChampion(champion) {
-    const skins = championSkins[champion.id];
+function selectRandomSkinForChampion(championId) {
+    if (!championId) {
+        console.warn('Champion ID invalide');
+        return null;
+    }
+    
+    const skins = championSkins[championId];
     
     if (!skins || skins.length === 0) {
-        console.warn(`Aucun skin trouvé pour ${champion.name}`);
+        console.warn(`Aucun skin trouvé pour le champion ${championId}`);
         return null;
     }
     
