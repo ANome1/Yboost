@@ -392,8 +392,16 @@ async function saveObtainedSkins(skins) {
             if (response.ok) {
                 console.log('✅ Skins sauvegardés dans la base de données:', skinsData.length);
             } else {
-                console.error('Erreur lors de la sauvegarde en BDD');
-                showToast('❌ Erreur lors de la sauvegarde', 'error');
+                // Lire la réponse d'erreur du serveur
+                let errorMessage = 'Erreur inconnue';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorData.message || 'Erreur serveur';
+                    console.error('❌ Erreur BDD (status ' + response.status + '):', errorMessage);
+                } catch (e) {
+                    console.error('❌ Erreur BDD (status ' + response.status + ') - impossible de lire la réponse');
+                }
+                showToast('❌ Erreur lors de la sauvegarde: ' + errorMessage, 'error');
             }
         } else {
             // Utilisateur non connecté - bloquer l'action

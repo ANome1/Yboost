@@ -201,22 +201,38 @@ async function getUserSkins(userId) {
 // Ajouter plusieurs skins à un utilisateur
 async function addSkinsToUser(userId, skins) {
   if (!dbAvailable) {
+    logger.warn('Tentative d\'ajout de skins alors que la BDD n\'est pas disponible');
     return { success: false, error: 'Base de données non disponible' };
   }
   
+  if (!userId || !skins || !Array.isArray(skins)) {
+    logger.error('Données invalides pour addSkinsToUser:', { userId, skinsIsArray: Array.isArray(skins) });
+    return { success: false, error: 'Paramètres invalides' };
+  }
+  
   try {
+    logger.debug(`Ajout de ${skins.length} skins pour user ${userId}`);
+    
     // Insérer tous les skins
     for (const skin of skins) {
+      if (!skin.skinId || !skin.skinName) {
+        logger.warn('Skin invalide ignoré:', skin);
+        continue;
+      }
+      
       await pool.query(
         'INSERT INTO user_skins (user_id, skin_id, name, rarity) VALUES ($1, $2, $3, $4)',
-        [userId, skin.skinId, skin.skinName, skin.rarity]
+        [userId, skin.skinId, skin.skinName, skin.rarity || 'kNoRarity']
       );
     }
     
+    logger.info(`✅ ${skins.length} skins ajoutés avec succès pour user ${userId}`);
     return { success: true };
   } catch (error) {
     logger.logDbError('addSkinsToUser', error);
-    return { success: false, error: 'Erreur lors de l\'ajout des skins' };
+    // Retourner un message d'erreur plus détaillé
+    const errorMsg = error.message || 'Erreur lors de l\'ajout des skins';
+    return { success: false, error: errorMsg };
   }
 }
 

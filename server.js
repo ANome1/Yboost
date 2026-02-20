@@ -160,6 +160,7 @@ app.get('/api/user/skins', async function (req, res) {
 // Route pour ajouter des skins à l'utilisateur
 app.post('/api/user/skins', async function (req, res) {
   if (!req.session.user) {
+    logger.warn('❌ Tentative d\'ajout de skins sans authentification')
     return res.status(401).json({ error: 'Non authentifié' })
   }
   
@@ -167,15 +168,19 @@ app.post('/api/user/skins', async function (req, res) {
     const { skins } = req.body
     
     if (!Array.isArray(skins) || skins.length === 0) {
+      logger.warn(`❌ Données invalides reçues de ${req.session.user.pseudo}:`, { isArray: Array.isArray(skins), length: skins?.length })
       return res.status(400).json({ error: 'Données invalides' })
     }
+    
+    logger.debug(`Tentative d'ajout de ${skins.length} skins pour ${req.session.user.pseudo}`)
     
     const result = await db.addSkinsToUser(req.session.user.id, skins)
     
     if (result.success) {
-      logger.info(`${skins.length} skins ajoutés pour ${req.session.user.pseudo}`)
+      logger.info(`✅ ${skins.length} skins ajoutés pour ${req.session.user.pseudo}`)
       res.json({ success: true })
     } else {
+      logger.error(`❌ Échec ajout skins pour ${req.session.user.pseudo}: ${result.error}`)
       res.status(500).json({ error: result.error })
     }
   } catch (error) {
