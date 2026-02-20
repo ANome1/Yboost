@@ -214,7 +214,10 @@ function createSkinCard(skin) {
             <div class="skin-image">
                 <img src="${imageUrl}" 
                      alt="${skin.name}"
-                     loading="lazy">
+                     width="308"
+                     height="560"
+                     loading="lazy"
+                     decoding="async">
             </div>
             <div class="skin-info">
                 <h3 class="skin-name">${skin.name}</h3>

@@ -244,7 +244,7 @@ function createCard(skin, index) {
                 <div class="card-rarity-badge" style="background: ${rarityInfo.color};">
                     ${rarityInfo.name}
                 </div>
-                <img src="${imageUrl}" alt="${skin.name}" class="card-image" onerror="this.style.opacity='0.5'">
+                <img src="${imageUrl}" alt="${skin.name}" class="card-image" width="308" height="560" decoding="async" onerror="this.style.opacity='0.5'">
                 <div class="card-content">
                     <h3 class="card-title">${skin.name}</h3>
                     <p class="card-subtitle">${rarityInfo.name}</p>

@@ -35,9 +35,17 @@ app.use(session({
   }
 }))
 
-// Servir les fichiers statiques
-app.use(express.static(__dirname))
-app.use('/src', express.static(path.join(__dirname, 'src')))
+// Servir les fichiers statiques avec cache
+app.use(express.static(__dirname, {
+  maxAge: '1d', // Cache de 1 jour pour les fichiers statiques
+  etag: true,
+  lastModified: true
+}))
+app.use('/src', express.static(path.join(__dirname, 'src'), {
+  maxAge: '1d',
+  etag: true,
+  lastModified: true
+}))
 
 // Routes pour les pages
 app.get('/', function (req, res) {

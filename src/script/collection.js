@@ -196,7 +196,10 @@ function createSkinCard(skinData) {
             <div class="skin-image">
                 <img src="${imageUrl}" 
                      alt="${skinData.skinName}"
+                     width="308"
+                     height="560"
                      loading="lazy"
+                     decoding="async"
                      onerror="this.style.opacity='0.5'">
             </div>
             <div class="skin-info">

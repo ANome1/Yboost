@@ -95,7 +95,10 @@ function createChampionCard(champion) {
             <div class="champion-image">
                 <img src="${imageUrl}" 
                      alt="${champion.name}"
-                     loading="lazy">
+                     width="308"
+                     height="560"
+                     loading="lazy"
+                     decoding="async">
             </div>
             <div class="champion-info">
                 <h3 class="champion-name">${champion.name}</h3>

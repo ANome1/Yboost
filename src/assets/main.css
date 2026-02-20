@@ -513,6 +513,13 @@ main {
     height: 65%;
     object-fit: cover;
     display: block;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+/* Image chargée */
+.card-image[src]:not([src=""]) {
+    opacity: 1;
 }
 
 .card-content {
@@ -969,13 +976,33 @@ select {
     width: 100%;
     aspect-ratio: 16/9;
     overflow: hidden;
+    background: linear-gradient(90deg, #0d1b2a 25%, #1a2332 50%, #0d1b2a 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    position: relative;
+}
+
+/* Animation skeleton loading */
+@keyframes skeleton-loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .skin-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+/* Image chargée */
+.skin-image img[src]:not([src=""]) {
+    opacity: 1;
 }
 
 .skin-card:hover .skin-image img {
