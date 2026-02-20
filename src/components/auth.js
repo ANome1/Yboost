@@ -5,7 +5,9 @@ let currentUser = null;
 // Vérifier si l'utilisateur est connecté
 async function checkAuth() {
   try {
-    const response = await fetch('/api/session');
+    const response = await fetch('/api/session', {
+      credentials: 'same-origin'
+    });
     const data = await response.json();
     
     if (data.authenticated) {
@@ -127,7 +129,8 @@ async function login() {
     const response = await fetch('/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pseudo, motDePasse: password })
+      body: JSON.stringify({ pseudo, motDePasse: password }),
+      credentials: 'same-origin'
     });
     
     const data = await response.json();
@@ -188,7 +191,8 @@ async function register() {
     const response = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pseudo, motDePasse: password })
+      body: JSON.stringify({ pseudo, motDePasse: password }),
+      credentials: 'same-origin'
     });
     
     const data = await response.json();
@@ -214,7 +218,10 @@ async function register() {
 // Déconnexion
 async function logout() {
   try {
-    const response = await fetch('/api/logout', { method: 'POST' });
+    const response = await fetch('/api/logout', { 
+      method: 'POST',
+      credentials: 'same-origin'
+    });
     
     if (response.ok) {
       currentUser = null;

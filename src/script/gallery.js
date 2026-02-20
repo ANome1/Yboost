@@ -103,7 +103,9 @@ async function loadUserSkins() {
     }
     
     try {
-        const response = await fetch('/api/user/skins');
+        const response = await fetch('/api/user/skins', {
+            credentials: 'same-origin'
+        });
         const data = await response.json();
         
         if (data.success) {
@@ -266,7 +268,8 @@ function addSkinButtonListeners() {
 async function addSkinToCollection(skinId) {
     try {
         const response = await fetch(`/api/user/skins/${skinId}`, {
-            method: 'POST'
+            method: 'POST',
+            credentials: 'same-origin'
         });
         
         const data = await response.json();
@@ -291,7 +294,8 @@ async function addSkinToCollection(skinId) {
 async function removeSkinFromCollection(skinId) {
     try {
         const response = await fetch(`/api/user/skins/${skinId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'same-origin'
         });
         
         const data = await response.json();

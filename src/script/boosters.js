@@ -45,7 +45,8 @@ async function runStressTest() {
     try {
         const response = await fetch('/api/stress-test', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin'
         });
 
         const result = await response.json();
@@ -384,7 +385,8 @@ async function saveObtainedSkins(skins) {
             const response = await fetch('/api/user/skins', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ skins: skinsData })
+                body: JSON.stringify({ skins: skinsData }),
+                credentials: 'same-origin'
             });
             
             if (response.ok) {

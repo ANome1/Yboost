@@ -56,7 +56,9 @@ async function loadAllSkins() {
         // Vérifier si l'utilisateur est connecté
         if (typeof currentUser !== 'undefined' && currentUser) {
             // Charger depuis la base de données
-            const response = await fetch('/api/user/skins');
+            const response = await fetch('/api/user/skins', {
+                credentials: 'same-origin'
+            });
             
             if (response.ok) {
                 rawSkins = await response.json();
