@@ -45,11 +45,32 @@ async function initDatabase() {
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         skin_id INTEGER NOT NULL,
-        skin_name VARCHAR(200),
+        name VARCHAR(200),
         rarity VARCHAR(20) DEFAULT 'kNoRarity',
         date_ajout TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    // Migration: Ajouter la colonne name si elle n'existe pas (compatibilité anciennes versions)
+    try {
+      // Vérifier d'abord si la colonne existe
+      const checkColumn = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'user_skins' AND column_name = 'name'
+      `);
+      
+      if (checkColumn.rows.length === 0) {
+        // La colonne n'existe pas, on l'ajoute
+        await pool.query(`ALTER TABLE user_skins ADD COLUMN name VARCHAR(200)`);
+        logger.info('✅ Migration: colonne "name" ajoutée à user_skins');
+      } else {
+        logger.debug('Migration: colonne "name" déjà présente dans user_skins');
+      }
+    } catch (error) {
+      logger.error('❌ Erreur lors de la migration de la colonne name:', error.message);
+      logger.warn('⚠️  Les insertions de skins pourraient échouer si la colonne name est manquante');
+    }
     
     // Index pour améliorer les performances
     await pool.query(`
@@ -161,13 +182,13 @@ async function getUserSkins(userId) {
   
   try {
     const result = await pool.query(
-      'SELECT skin_id, skin_name, rarity, date_ajout FROM user_skins WHERE user_id = $1 ORDER BY date_ajout DESC',
+      'SELECT skin_id, name, rarity, date_ajout FROM user_skins WHERE user_id = $1 ORDER BY date_ajout DESC',
       [userId]
     );
     
     return result.rows.map(row => ({
       skinId: row.skin_id,
-      skinName: row.skin_name,
+      skinName: row.name,
       rarity: row.rarity,
       dateObtained: row.date_ajout
     }));
@@ -187,7 +208,7 @@ async function addSkinsToUser(userId, skins) {
     // Insérer tous les skins
     for (const skin of skins) {
       await pool.query(
-        'INSERT INTO user_skins (user_id, skin_id, skin_name, rarity) VALUES ($1, $2, $3, $4)',
+        'INSERT INTO user_skins (user_id, skin_id, name, rarity) VALUES ($1, $2, $3, $4)',
         [userId, skin.skinId, skin.skinName, skin.rarity]
       );
     }
