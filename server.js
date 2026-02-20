@@ -1,9 +1,18 @@
 require('dotenv').config()
 var express = require('express')
 var session = require('express-session')
+var morgan = require('morgan')
 var path = require('path')
 var db = require('./database')
+var logger = require('./logger')
 var app = express()
+
+// Middleware de logging HTTP
+app.use(morgan('combined', {
+  stream: {
+    write: (message) => logger.info(message.trim())
+  }
+}))
 
 // Middleware
 app.use(express.json())
@@ -74,12 +83,15 @@ app.post('/api/register', async function (req, res) {
         id: result.userId,
         pseudo: pseudo
       }
+      logger.logAuth('register', pseudo, true, req.ip)
+      logger.info(`Nouvel utilisateur inscrit: ${pseudo} (ID: ${result.userId})`)
       res.json({ success: true, user: req.session.user })
     } else {
+      logger.logAuth('register', pseudo, false, req.ip, result.error)
       res.status(400).json({ error: result.error })
     }
   } catch (error) {
-    console.error('Erreur inscription:', error)
+    logger.error('Erreur inscription:', error)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
@@ -97,22 +109,28 @@ app.post('/api/login', async function (req, res) {
     
     if (result.success) {
       req.session.user = result.user
+      logger.logAuth('login', pseudo, true, req.ip)
+      logger.info(`Utilisateur connecté: ${pseudo} (ID: ${result.user.id})`)
       res.json({ success: true, user: result.user })
     } else {
+      logger.logAuth('login', pseudo, false, req.ip, result.error)
       res.status(401).json({ error: result.error })
     }
   } catch (error) {
-    console.error('Erreur connexion:', error)
+    logger.error('Erreur connexion:', error)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
 
 // Route de déconnexion
 app.post('/api/logout', function (req, res) {
+  const pseudo = req.session.user ? req.session.user.pseudo : 'unknown'
   req.session.destroy(function (err) {
     if (err) {
+      logger.error('Erreur déconnexion:', err)
       res.status(500).json({ error: 'Erreur lors de la déconnexion' })
     } else {
+      logger.info(`Utilisateur déconnecté: ${pseudo}`)
       res.json({ success: true })
     }
   })
@@ -126,9 +144,10 @@ app.get('/api/user/skins', async function (req, res) {
   
   try {
     const skins = await db.getUserSkins(req.session.user.id)
+    logger.debug(`Skins récupérés pour ${req.session.user.pseudo}: ${skins.length} skins`)
     res.json(skins)
   } catch (error) {
-    console.error('Erreur récupération skins:', error)
+    logger.error('Erreur récupération skins:', error)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
@@ -149,12 +168,13 @@ app.post('/api/user/skins', async function (req, res) {
     const result = await db.addSkinsToUser(req.session.user.id, skins)
     
     if (result.success) {
+      logger.info(`${skins.length} skins ajoutés pour ${req.session.user.pseudo}`)
       res.json({ success: true })
     } else {
       res.status(500).json({ error: result.error })
     }
   } catch (error) {
-    console.error('Erreur ajout skins:', error)
+    logger.error('Erreur ajout skins:', error)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
@@ -191,13 +211,13 @@ app.post('/api/stress-test', async function (req, res) {
     const result = await db.addSkinsToUser(req.session.user.id, randomSkins)
     
     if (result.success) {
-      console.log(`🚀 Stress test: ${COUNT} skins générés pour l'utilisateur ${req.session.user.pseudo}`)
+      logger.warn(`STRESS TEST: ${COUNT} skins générés pour ${req.session.user.pseudo} (ID: ${req.session.user.id})`)
       res.json({ success: true, count: COUNT })
     } else {
       res.status(500).json({ error: result.error })
     }
   } catch (error) {
-    console.error('Erreur stress test:', error)
+    logger.error('Erreur stress test:', error)
     res.status(500).json({ error: 'Erreur serveur' })
   }
 })
@@ -208,7 +228,9 @@ async function startServer() {
   
   var server = app.listen(process.env.PORT || 3000, function () {
     var port = process.env.PORT || 3000
-    console.log('✅ Yboost server listening on port', port)
+    logger.info(`✅ Yboost server listening on port ${port}`)
+    logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`)
+    logger.info(`Log level: ${logger.level}`)
   })
 }
 

@@ -1,4 +1,7 @@
-node_modules*.db
+node_modules
+*.db
 *.db-journal
 .env
 *.db
+logs/
+*.log

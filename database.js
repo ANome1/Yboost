@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { Pool } = require('pg');
+const logger = require('./logger');
 
 // Configuration PostgreSQL
 const poolConfig = process.env.DATABASE_URL
@@ -60,14 +61,12 @@ async function initDatabase() {
     `);
     
     dbAvailable = true;
-    console.log('✅ Base de données PostgreSQL initialisée');
+    logger.info('✅ Base de données PostgreSQL initialisée');
+    logger.debug(`Tables créées: users, user_skins`);
   } catch (error) {
-    console.error('❌ Base de données PostgreSQL non disponible:', error.message);
-    console.log('⚠️  L\'application fonctionnera en mode dégradé (localStorage uniquement)');
-    console.log('💡 Pour activer la BDD:');
-    console.log('   1. Installez PostgreSQL: sudo apt-get install postgresql');
-    console.log('   2. Créez la base de données: sudo -u postgres createdb yboost');
-    console.log('   3. Configurez DATABASE_URL dans .env (optionnel)');
+    logger.error('❌ Base de données PostgreSQL non disponible:', error);
+    logger.warn('⚠️  L\'application fonctionnera en mode dégradé');
+    logger.info('💡 Pour activer la BDD: installez PostgreSQL et créez la base ybooster');
     dbAvailable = false;
   }
 }
@@ -79,7 +78,7 @@ async function testConnection() {
     dbAvailable = true;
     return true;
   } catch (error) {
-    console.error('❌ Erreur de connexion à la base de données:', error);
+    logger.logDbError('testConnection', error);
     dbAvailable = false;
     return false;
   }
@@ -113,7 +112,7 @@ async function createUser(pseudo, motDePasse) {
     
     return { success: true, userId: result.rows[0].id };
   } catch (error) {
-    console.error('Erreur lors de la création de l\'utilisateur:', error);
+    logger.logDbError('createUser', error);
     return { success: false, error: 'Erreur lors de la création du compte' };
   }
 }
@@ -149,7 +148,7 @@ async function verifyUser(pseudo, motDePasse) {
       }
     };
   } catch (error) {
-    console.error('Erreur lors de la vérification:', error);
+    logger.logDbError('verifyUser', error);
     return { success: false, error: 'Erreur lors de la connexion' };
   }
 }
@@ -173,7 +172,7 @@ async function getUserSkins(userId) {
       dateObtained: row.date_ajout
     }));
   } catch (error) {
-    console.error('Erreur lors de la récupération des skins:', error);
+    logger.logDbError('getUserSkins', error);
     return [];
   }
 }
@@ -195,7 +194,7 @@ async function addSkinsToUser(userId, skins) {
     
     return { success: true };
   } catch (error) {
-    console.error('Erreur lors de l\'ajout des skins:', error);
+    logger.logDbError('addSkinsToUser', error);
     return { success: false, error: 'Erreur lors de l\'ajout des skins' };
   }
 }
