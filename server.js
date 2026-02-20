@@ -44,6 +44,14 @@ app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, 'index.html'))
 })
 
+app.get('/collection', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/pages/collection.html'))
+})
+
+app.get('/gallery', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/pages/gallery.html'))
+})
+
 // Routes API pour les données
 app.get('/api/skins', function (req, res) {
   res.sendFile(path.join(__dirname, 'src/data/skins.json'))
