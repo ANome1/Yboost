@@ -10,8 +10,6 @@ const skinGrid = document.getElementById('skinGrid');
 const skinSearchInput = document.getElementById('skinSearchInput');
 const rarityFilter = document.getElementById('rarityFilter');
 const skinLineFilter = document.getElementById('skinLineFilter');
-const legacyFilter = document.getElementById('legacyFilter');
-const ownedFilter = document.getElementById('ownedFilter');
 const skinCount = document.getElementById('skinCount');
 
 // Charger les données au démarrage
@@ -59,8 +57,6 @@ function setupEventListeners() {
     skinSearchInput?.addEventListener('input', filterSkins);
     rarityFilter?.addEventListener('change', filterSkins);
     skinLineFilter?.addEventListener('change', filterSkins);
-    legacyFilter?.addEventListener('change', filterSkins);
-    ownedFilter?.addEventListener('change', filterSkins);
 }
 
 // Charger tous les skins
@@ -152,8 +148,6 @@ function filterSkins() {
     const searchTerm = skinSearchInput?.value.toLowerCase() || '';
     const selectedRarity = rarityFilter?.value || '';
     const selectedSkinLine = skinLineFilter?.value || '';
-    const showLegacyOnly = legacyFilter?.checked || false;
-    const showOwnedOnly = ownedFilter?.checked || false;
     
     filteredSkins = allSkins.filter(skin => {
         // Recherche par nom
@@ -166,13 +160,7 @@ function filterSkins() {
         const matchesSkinLine = !selectedSkinLine || 
             (skin.skinLines && skin.skinLines.some(line => line.id.toString() === selectedSkinLine));
         
-        // Filtre legacy
-        const matchesLegacy = !showLegacyOnly || skin.isLegacy === true;
-        
-        // Filtre skins possédés
-        const matchesOwned = !showOwnedOnly || userSkins.includes(skin.id);
-        
-        return matchesSearch && matchesRarity && matchesSkinLine && matchesLegacy && matchesOwned;
+        return matchesSearch && matchesRarity && matchesSkinLine;
     });
     
     displaySkins(filteredSkins);
@@ -238,7 +226,7 @@ function createSkinCard(skin) {
                     <span class="skin-badge rarity-badge ${rarityClass}">${rarityLabel}</span>
                     ${skin.isLegacy ? '<span class="skin-badge legacy-badge">Legacy</span>' : ''}
                     ${skin.skinLines && skin.skinLines.length > 0 ? 
-                        `<span class="skin-badge skin-line-badge">Line ${skin.skinLines[0].id}</span>` : ''}
+                        `<span class="skin-badge skin-line-badge">${skinLineNames.get(skin.skinLines[0].id) || 'Line ' + skin.skinLines[0].id}</span>` : ''}
                 </div>
                 ${isAuthenticated ? `
                     <div class="skin-actions">
