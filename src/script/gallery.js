@@ -3,6 +3,7 @@ let allSkins = [];
 let filteredSkins = [];
 let userSkins = [];
 let skinLines = new Map();
+let skinLineNames = new Map(); // id -> name
 
 // Éléments DOM
 const skinGrid = document.getElementById('skinGrid');
@@ -65,9 +66,20 @@ function setupEventListeners() {
 // Charger tous les skins
 async function loadSkins() {
     try {
-        const response = await fetch('/api/skins');
-        const data = await response.json();
-        
+        const [skinsResponse, skinlinesResponse] = await Promise.all([
+            fetch('/api/skins'),
+            fetch('/api/skinlines')
+        ]);
+        const data = await skinsResponse.json();
+        const skinlinesData = await skinlinesResponse.json();
+
+        // Construire le mapping id -> name des skin lines
+        skinlinesData.forEach(line => {
+            if (line.id && line.name) {
+                skinLineNames.set(line.id, line.name);
+            }
+        });
+
         // Convertir l'objet en tableau
         allSkins = Object.values(data);
         
@@ -129,7 +141,8 @@ function populateSkinLineFilter() {
     sortedLines.forEach(line => {
         const option = document.createElement('option');
         option.value = line.id;
-        option.textContent = `Skin Line ${line.id}`;
+        const name = skinLineNames.get(line.id);
+        option.textContent = name && name.trim() ? name : `Skin Line ${line.id}`;
         skinLineFilter.appendChild(option);
     });
 }

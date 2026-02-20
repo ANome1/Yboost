@@ -76,6 +76,11 @@ app.get('/api/skins', function (req, res) {
   }
 })
 
+// Route API pour les skin lines
+app.get('/api/skinlines', function (req, res) {
+  res.sendFile(path.join(__dirname, 'src/data/skinlines.json'))
+})
+
 // Route pour vérifier la session
 app.get('/api/session', function (req, res) {
   if (req.session.user) {
