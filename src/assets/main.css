@@ -1317,28 +1317,3 @@ select {
     text-align: center;
     min-height: 20px;
 }
-
-/* Bouton de stress test */
-.stress-test-btn {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-    border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
-}
-
-.stress-test-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-}
-
-.stress-test-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}

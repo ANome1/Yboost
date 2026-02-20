@@ -24,52 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupBoosterButtons();
 });
 
-// Stress test - générer massivement des skins et calculs serveur
-async function runStressTest() {
-    if (typeof currentUser === 'undefined' || !currentUser) {
-        showToast('⚠️ Connectez-vous pour lancer le stress test', 'warning');
-        return;
-    }
-
-    const btn = document.getElementById('stressTestBtn');
-    if (!btn) return;
-
-    const confirmTest = confirm('⚠️ ATTENTION : Ce test va consommer énormément de ressources serveur (CPU, RAM, I/O).\n\nContinuer ?');
-    if (!confirmTest) return;
-
-    btn.disabled = true;
-    btn.textContent = '🔥 STRESS TEST EN COURS... Ne pas interrompre !';
-
-    const startTime = Date.now();
-
-    try {
-        const response = await fetch('/api/stress-test', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'same-origin'
-        });
-
-        const result = await response.json();
-        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-
-        if (response.ok) {
-            showToast(`✅ Stress test terminé !\n${result.count} skins générés\n${result.operations} opérations effectuées\nTemps: ${duration}s`, 'success');
-            setTimeout(() => {
-                window.location.href = '/src/pages/collection.html';
-            }, 2000);
-        } else {
-            showToast(`❌ ${result.error}`, 'error');
-            btn.disabled = false;
-            btn.textContent = '🔥 STRESS TEST SERVEUR (5000 skins + calculs intensifs)';
-        }
-    } catch (error) {
-        console.error('Erreur stress test:', error);
-        showToast('❌ Erreur lors du stress test', 'error');
-        btn.disabled = false;
-        btn.textContent = '🔥 STRESS TEST SERVEUR (5000 skins + calculs intensifs)';
-    }
-}
-
 // Charger uniquement les skins
 async function loadData() {
     try {

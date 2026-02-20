@@ -10,7 +10,6 @@ Application web d'ouverture de boosters de skins League of Legends avec système
 - 🔐 **Authentification sécurisée** - Inscription/connexion avec PostgreSQL
 - 💾 **Sauvegarde en BDD** - Toutes les collections sont persistées
 - 📊 **Statistiques** - Visualisation du nombre de skins par rareté
-- 🧪 **Stress test** - Bouton pour générer 100 skins aléatoires (dev)
 - 📝 **Logs structurés** - Winston + Morgan pour le monitoring
 
 ## 🚀 Installation Locale
@@ -110,7 +109,7 @@ Yboost/
 │   └── script/
 │       ├── app.js             # Script de la page champions
 │       ├── boosters.js        # Logique d'ouverture de boosters
-│       ├── collection.js      # Affichage de la collection + stress test
+        ├── collection.js      # Affichage de la collection
 │       └── gallery.js         # Galerie de skins
 ├── database.js                # Connexion et opérations PostgreSQL
 ├── logger.js                  # Configuration Winston (logs structurés)
@@ -119,10 +118,8 @@ Yboost/
 ├── package.json               # Dépendances
 ├── Procfile                   # Configuration Scalingo
 ├── .env                       # Variables locales (ne pas commiter)
-├── .env.production.example    # Template pour production
 ├── AUTH_SETUP.md              # Documentation auth PostgreSQL
 ├── LOGGING.md                 # Documentation système de logs
-├── LOCAL_DEV.md               # Configuration développement local
 └── SCALINGO_SETUP.md          # Instructions déploiement Scalingo
 ```
 
@@ -149,12 +146,6 @@ Yboost/
 - Statistiques par rareté affichées en haut
 - Filtrage par rareté disponible
 - Les duplicatas affichent un badge avec le nombre
-
-### 4. Stress test (développement)
-
-- Page **Collection** : bouton rouge **"Générer 100 Skins"**
-- Génère 100 skins aléatoires côté **serveur**
-- Utile pour tester les performances et l'affichage
 
 ## 🎨 Système de Raretés
 
@@ -228,8 +219,6 @@ Voir [LOGGING.md](LOGGING.md) pour plus de détails.
 
 ## ☁️ Déploiement Scalingo
 
-⚠️ **Le déploiement automatique est DÉSACTIVÉ**. Voir [LOCAL_DEV.md](LOCAL_DEV.md).
-
 Pour déployer **manuellement** :
 
 ```bash
@@ -251,7 +240,7 @@ SESSION_SECRET=<générer avec: openssl rand -base64 32>
 LOG_LEVEL=info
 ```
 
-Voir [.env.production.example](.env.production.example) et [SCALINGO_SETUP.md](SCALINGO_SETUP.md) pour les détails.
+Voir [SCALINGO_SETUP.md](SCALINGO_SETUP.md) pour les détails.
 
 ## 🔐 Sécurité
 
@@ -299,9 +288,7 @@ psql -d ybooster -c "DROP TABLE IF EXISTS user_skins, users CASCADE;"
 
 - [AUTH_SETUP.md](AUTH_SETUP.md) - Configuration authentification PostgreSQL
 - [LOGGING.md](LOGGING.md) - Système de logs Winston/Morgan
-- [LOCAL_DEV.md](LOCAL_DEV.md) - Configuration développement local
 - [SCALINGO_SETUP.md](SCALINGO_SETUP.md) - Déploiement sur Scalingo
-- [.env.production.example](.env.production.example) - Template variables production
 
 ## ⚖️ Licence
 
