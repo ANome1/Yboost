@@ -18,6 +18,10 @@ app.use(morgan('combined', {
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Trust proxy - nécessaire pour Scalingo/Heroku et autres plateformes avec reverse proxy
+// Permet à Express de faire confiance aux headers X-Forwarded-* du proxy
+app.set('trust proxy', 1)
+
 // Configuration des sessions
 app.use(session({
   secret: process.env.SESSION_SECRET || 'yboost-secret-key-change-in-production',
