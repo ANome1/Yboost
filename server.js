@@ -62,7 +62,18 @@ app.get('/gallery', function (req, res) {
 
 // Routes API pour les données
 app.get('/api/skins', function (req, res) {
-  res.sendFile(path.join(__dirname, 'src/data/skins.json'))
+  try {
+    const skinsData = require('./src/data/skins.json')
+    const filtered = Object.fromEntries(
+      Object.entries(skinsData).filter(([, skin]) =>
+        !skin.name?.toLowerCase().includes('doom bot')
+      )
+    )
+    res.json(filtered)
+  } catch (err) {
+    logger.error('Erreur chargement skins:', err)
+    res.status(500).json({ error: 'Erreur chargement des skins' })
+  }
 })
 
 // Route pour vérifier la session
