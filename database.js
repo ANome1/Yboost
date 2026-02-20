@@ -91,6 +91,28 @@ async function initDatabase() {
       logger.warn('⚠️  Les insertions de skins pourraient échouer si la colonne rarity est manquante');
     }
     
+    // Migration: Supprimer la contrainte UNIQUE sur (user_id, skin_id) pour permettre les doublons
+    try {
+      const checkConstraint = await pool.query(`
+        SELECT constraint_name 
+        FROM information_schema.table_constraints 
+        WHERE table_name = 'user_skins' 
+          AND constraint_type = 'UNIQUE'
+          AND constraint_name LIKE '%user_id%skin_id%'
+      `);
+      
+      if (checkConstraint.rows.length > 0) {
+        const constraintName = checkConstraint.rows[0].constraint_name;
+        await pool.query(`ALTER TABLE user_skins DROP CONSTRAINT ${constraintName}`);
+        logger.info(`✅ Migration: contrainte UNIQUE "${constraintName}" supprimée de user_skins (doublons autorisés)`);
+      } else {
+        logger.debug('Migration: aucune contrainte UNIQUE sur (user_id, skin_id) - doublons déjà autorisés');
+      }
+    } catch (error) {
+      logger.error('❌ Erreur lors de la suppression de la contrainte UNIQUE:', error.message);
+      logger.warn('⚠️  Les doublons de skins pourraient ne pas fonctionner correctement');
+    }
+    
     // Index pour améliorer les performances
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_user_skins_user_id ON user_skins(user_id)
