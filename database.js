@@ -72,6 +72,25 @@ async function initDatabase() {
       logger.warn('⚠️  Les insertions de skins pourraient échouer si la colonne name est manquante');
     }
     
+    // Migration: Ajouter la colonne rarity si elle n'existe pas (compatibilité anciennes versions)
+    try {
+      const checkRarity = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'user_skins' AND column_name = 'rarity'
+      `);
+      
+      if (checkRarity.rows.length === 0) {
+        await pool.query(`ALTER TABLE user_skins ADD COLUMN rarity VARCHAR(20) DEFAULT 'kNoRarity'`);
+        logger.info('✅ Migration: colonne "rarity" ajoutée à user_skins');
+      } else {
+        logger.debug('Migration: colonne "rarity" déjà présente dans user_skins');
+      }
+    } catch (error) {
+      logger.error('❌ Erreur lors de la migration de la colonne rarity:', error.message);
+      logger.warn('⚠️  Les insertions de skins pourraient échouer si la colonne rarity est manquante');
+    }
+    
     // Index pour améliorer les performances
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_user_skins_user_id ON user_skins(user_id)
